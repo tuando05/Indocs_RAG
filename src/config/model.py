@@ -7,4 +7,4 @@ class ModelConfig(BaseSettings):
 
     class Config:
         env_file = ".env"
-        extra = "ignore" # Bỏ qua các biến khác trong file .env nếu không dùng ở đây
+        extra = "ignore"
