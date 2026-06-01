@@ -4,3 +4,13 @@
 .env.local
 
 **/__pycache__
+
+# Local data & database
+/chroma/
+/data/*
+!/data/.gitkeep
+/chat_sessions.json
+
+# IDE settings
+.idea/
+.vscode/
