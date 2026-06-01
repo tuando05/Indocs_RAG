@@ -7,13 +7,16 @@ from langchain_core.prompts import ChatPromptTemplate
 from src.config import PathConfig, RAGConfig, ModelConfig
 
 class RAGEngine:
-    def __init__(self):
+    def __init__(self, llm_model: str = None, temperature: float = 0.0, vector_search_k: int = None, embeddings = None):
         self.paths = PathConfig()
         self.rag_cfg = RAGConfig()
         self.model_cfg = ModelConfig()
         
         # 1. Load Embeddings
-        self.embeddings = HuggingFaceEmbeddings(model_name=self.model_cfg.EMBEDDING_MODEL_NAME)
+        if embeddings is not None:
+            self.embeddings = embeddings
+        else:
+            self.embeddings = HuggingFaceEmbeddings(model_name=self.model_cfg.EMBEDDING_MODEL_NAME)
         
         # 2. Load Vector DB
         self.vector_db = Chroma(
@@ -22,10 +25,11 @@ class RAGEngine:
         )
         
         # 3. Initialize LLM
+        active_llm_model = llm_model or self.model_cfg.LLM_MODEL
         self.llm = ChatOllama(
             base_url=self.model_cfg.OLLAMA_URL,
-            model=self.model_cfg.LLM_MODEL,
-            temperature=0
+            model=active_llm_model,
+            temperature=temperature
         )
         
         # 4. Setup Prompt chuẩn ChatPromptTemplate
@@ -46,7 +50,8 @@ class RAGEngine:
         combine_docs_chain = create_stuff_documents_chain(self.llm, self.prompt)
         
         # Bộ truy xuất (Retriever) từ Vector DB
-        retriever = self.vector_db.as_retriever(search_kwargs={"k": self.rag_cfg.VECTOR_SEARCH_K})
+        k = vector_search_k if vector_search_k is not None else self.rag_cfg.VECTOR_SEARCH_K
+        retriever = self.vector_db.as_retriever(search_kwargs={"k": k})
         
         # RAG Chain hoàn chỉnh kết nối Retriever và bộ kết hợp tài liệu
         self.qa_chain = create_retrieval_chain(retriever, combine_docs_chain)
