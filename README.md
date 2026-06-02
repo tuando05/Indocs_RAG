@@ -27,7 +27,9 @@ Indocs_RAG/
 ├── main.py                # Giao diện người dùng Streamlit (Chatbot)
 ├── test.py                # Script chẩn đoán và kiểm tra kết nối hệ thống
 ├── requirements.txt       # Các thư viện Python cần thiết
+├── .env.example           # Tệp cấu hình mẫu
 └── .env                   # Tệp cấu hình các biến môi trường
+
 ```
 
 ---
@@ -56,21 +58,7 @@ Hệ thống sử dụng mô hình LLM chạy cục bộ thông qua Ollama.
    pip install -r requirements.txt
    ```
 
-### 3. Cấu hình file `.env`
-Tạo hoặc chỉnh sửa tệp `.env` tại thư mục gốc với nội dung như sau:
-```env
-# Cấu hình Mô hình
-OLLAMA_URL=http://localhost:11434
-LLM_MODEL=llama3.1:8b                 # Tên mô hình đã tải từ Ollama
-EMBEDDING_MODEL_NAME=all-MiniLM-L6-v2 # Mô hình Embedding tải từ HuggingFace
-
-# Cấu hình RAG
-CHUNK_SIZE=1000                       # Kích thước mỗi phân đoạn văn bản
-CHUNK_OVERLAP=200                     # Độ chồng chập giữa các phân đoạn
-VECTOR_SEARCH_K=4                     # Số lượng phân đoạn tối đa truy xuất
-```
-
----
+### ### 3. Cấu hình file `.env`: Tạo hoặc chỉnh sửa tệp `.env` tại thư mục gốc.
 
 ## 🚀 Hướng dẫn Sử dụng Hệ thống
 
