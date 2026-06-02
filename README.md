@@ -58,7 +58,7 @@ Hệ thống sử dụng mô hình LLM chạy cục bộ thông qua Ollama.
    pip install -r requirements.txt
    ```
 
-### ### 3. Cấu hình file `.env`: Tạo hoặc chỉnh sửa tệp `.env` tại thư mục gốc.
+### 3. Cấu hình file `.env`: Tạo hoặc chỉnh sửa tệp `.env` tại thư mục gốc.
 
 ## 🚀 Hướng dẫn Sử dụng Hệ thống
 
