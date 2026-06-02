@@ -40,12 +40,29 @@ try:
     rag = RAGEngine()
     print("OK: Khởi tạo RAGEngine thành công.")
     
-    print("\n--- Kiểm tra Truy vấn Thử nghiệm ---")
-    query_text = "Xin chào, hãy giới thiệu ngắn gọn về bản thân."
-    print(f"Gửi truy vấn thử nghiệm: '{query_text}'")
-    result = rag.query(query_text)
-    print("Phản hồi từ LLM:")
-    print(result["answer"])
+    print("\n--- Kiểm tra Truy vấn Thử nghiệm (Có ngữ cảnh lịch sử) ---")
+    
+    # Lịch sử hội thoại mô phỏng
+    history = []
+    
+    # Câu hỏi 1
+    q1 = "Mô hình ngôn ngữ lớn (LLM) là gì?"
+    print(f"Câu hỏi 1: '{q1}'")
+    res1 = rag.query(q1, chat_history=history)
+    a1 = res1["answer"]
+    print(f"Phản hồi 1:\n{a1}\n")
+    
+    # Cập nhật lịch sử
+    history.append({"role": "user", "content": q1})
+    history.append({"role": "assistant", "content": a1})
+    
+    # Câu hỏi 2 (nối tiếp, sử dụng đại từ 'Nó')
+    q2 = "Nó viết tắt của cụm từ tiếng Anh nào?"
+    print(f"Câu hỏi 2: '{q2}'")
+    res2 = rag.query(q2, chat_history=history)
+    a2 = res2["answer"]
+    print(f"Phản hồi 2:\n{a2}\n")
+    
     print("\n[HỆ THỐNG SẴN SÀNG]")
 
 except Exception as e:

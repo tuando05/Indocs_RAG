@@ -3,8 +3,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from src.config import PathConfig, RAGConfig, ModelConfig
+from src.rag.history import format_chat_history, get_history_aware_retriever
 
 class RAGEngine:
     def __init__(self, llm_model: str = None, temperature: float = 0.0, vector_search_k: int = None, embeddings = None):
@@ -32,7 +33,7 @@ class RAGEngine:
             temperature=temperature
         )
         
-        # 4. Setup Prompt chuẩn ChatPromptTemplate
+        # 4. Setup Prompt chuẩn ChatPromptTemplate hỗ trợ chat history
         system_prompt = (
             "Sử dụng các đoạn ngữ cảnh sau đây để trả lời câu hỏi.\n"
             "Nếu bạn không biết câu trả lời, hãy nói rằng bạn không biết, đừng cố tự tạo ra câu trả lời.\n"
@@ -42,23 +43,33 @@ class RAGEngine:
         
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
+            MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{input}"),
         ])
         
-        # 5. Create Chain theo chuẩn mới LCEL
+        # 5. Create Chain theo chuẩn mới LCEL có ngữ cảnh lịch sử
+        # Bộ truy xuất (Retriever) từ Vector DB
+        k = vector_search_k if vector_search_k is not None else self.rag_cfg.VECTOR_SEARCH_K
+        base_retriever = self.vector_db.as_retriever(search_kwargs={"k": k})
+        
+        # Tạo history aware retriever
+        self.history_aware_retriever = get_history_aware_retriever(self.llm, base_retriever)
+        
         # Bộ kết hợp tài liệu vào prompt và gửi cho LLM
         combine_docs_chain = create_stuff_documents_chain(self.llm, self.prompt)
         
-        # Bộ truy xuất (Retriever) từ Vector DB
-        k = vector_search_k if vector_search_k is not None else self.rag_cfg.VECTOR_SEARCH_K
-        retriever = self.vector_db.as_retriever(search_kwargs={"k": k})
-        
         # RAG Chain hoàn chỉnh kết nối Retriever và bộ kết hợp tài liệu
-        self.qa_chain = create_retrieval_chain(retriever, combine_docs_chain)
+        self.qa_chain = create_retrieval_chain(self.history_aware_retriever, combine_docs_chain)
 
-    def query(self, question: str):
-        # Đầu vào của chuỗi mới yêu cầu key là "input" thay vì "query"
-        response = self.qa_chain.invoke({"input": question})
+    def query(self, question: str, chat_history: list = None):
+        # Chuyển đổi chat_history thô sang đối tượng tin nhắn của LangChain
+        formatted_history = format_chat_history(chat_history)
+        
+        # Đầu vào của chuỗi mới yêu cầu key là "input" và "chat_history"
+        response = self.qa_chain.invoke({
+            "input": question,
+            "chat_history": formatted_history
+        })
         
         # Chuỗi mới trả kết quả ở key "answer" và tài liệu ở "context"
         return {

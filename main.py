@@ -13,24 +13,9 @@ inject_custom_css()
 
 # 2. Khởi tạo cấu hình hệ thống
 paths = PathConfig()
+model_cfg = ModelConfig()
+rag_cfg = RAGConfig()
 
-try:
-    model_cfg = ModelConfig()
-except Exception:
-    class FallbackModelConfig:
-        OLLAMA_URL = "http://localhost:11434"
-        LLM_MODEL = "llama3.1:8b"
-        EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
-    model_cfg = FallbackModelConfig()
-
-try:
-    rag_cfg = RAGConfig()
-except Exception:
-    class FallbackRAGConfig:
-        CHUNK_SIZE = 1000
-        CHUNK_OVERLAP = 200
-        VECTOR_SEARCH_K = 4
-    rag_cfg = FallbackRAGConfig()
 
 # 3. Tải lịch sử cuộc trò chuyện (Sessions)
 if "sessions_data" not in st.session_state:
@@ -122,7 +107,8 @@ with tab_chat:
             else:
                 with st.spinner("Đang tra cứu tài liệu và trả lời..."):
                     try:
-                        result = rag.query(prompt)
+                        # Lấy lịch sử hội thoại trước đó (loại trừ câu hỏi hiện tại vừa thêm vào cuối danh sách)
+                        result = rag.query(prompt, chat_history=messages[:-1])
                         answer = result["answer"]
                         sources = list(set(result["sources"])) if result.get("sources") else []
                         
