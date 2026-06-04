@@ -40,7 +40,18 @@ def export_chat_markdown(active_session):
         if "sources" in msg and msg["sources"]:
             chat_md += "*Nguồn tham khảo:*\n"
             for src in msg["sources"]:
-                if src:
-                    chat_md += f"- {os.path.basename(src)}\n"
+                if isinstance(src, dict):
+                    source_path = src.get("source")
+                    page = src.get("page")
+                    content = src.get("content")
+                    filename = os.path.basename(source_path) if source_path else "Tài liệu không rõ"
+                    page_str = f" (Trang {page})" if page else ""
+                    chat_md += f"- **{filename}**{page_str}\n"
+                    if content:
+                        # Thụt lề nội dung trích dẫn dưới dạng quote block
+                        indented_content = "\n".join([f"  > {line}" for line in content.strip().split("\n")])
+                        chat_md += f"{indented_content}\n"
+                elif isinstance(src, str):
+                    chat_md += f"- **{os.path.basename(src)}**\n"
             chat_md += "\n"
     return chat_md

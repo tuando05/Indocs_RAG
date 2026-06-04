@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import html
 from src.config import PathConfig, RAGConfig, ModelConfig
 from src.rag.engine import RAGEngine
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -46,6 +47,40 @@ if isinstance(rag, Exception):
     st.sidebar.error(f"Lỗi khởi tạo động cơ RAG: {rag}")
     rag = None
 
+# Hàm hiển thị nguồn trích dẫn dạng Accordion đẹp mắt và hỗ trợ cả lịch sử cũ
+def render_sources(sources):
+    if not sources:
+        return
+    with st.expander("📚 Nguồn tham khảo"):
+        for src in sources:
+            if not src:
+                continue
+            if isinstance(src, dict):
+                source_path = src.get("source")
+                page = src.get("page")
+                content = src.get("content", "")
+                filename = html.escape(os.path.basename(source_path)) if source_path else "Tài liệu không rõ"
+                escaped_content = html.escape(content) if content else ""
+                
+                # Render HTML Accordion
+                st.markdown(
+                    f"""
+                    <details class="source-details">
+                        <summary class="source-summary">
+                            <span class="source-icon">📄</span>
+                            <span class="source-name" title="{filename}">{filename}</span>
+                            <span class="source-badge">Trang {page}</span>
+                        </summary>
+                        <div class="source-body">
+                            {escaped_content}
+                        </div>
+                    </details>
+                    """,
+                    unsafe_allow_html=True
+                )
+            elif isinstance(src, str):
+                st.markdown(f"<div class='source-card'>📄 {os.path.basename(src)}</div>", unsafe_allow_html=True)
+
 # 6. Giao diện chính với các Tab chức năng
 st.title("🤖 Indocs RAG Chatbot")
 st.markdown("Hỏi đáp thông minh dựa trên tài liệu nghiên cứu của bạn.")
@@ -77,10 +112,7 @@ with tab_chat:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if "sources" in msg and msg["sources"]:
-                with st.expander("📚 Nguồn tham khảo"):
-                    for src in msg["sources"]:
-                        if src:
-                            st.markdown(f"<div class='source-card'>📄 {os.path.basename(src)}</div>", unsafe_allow_html=True)
+                render_sources(msg["sources"])
 
     # Nút xuất lịch sử hội thoại
     if messages:
@@ -114,10 +146,7 @@ with tab_chat:
                         
                         st.markdown(answer)
                         if sources:
-                            with st.expander("📚 Nguồn tham khảo"):
-                                for src in sources:
-                                    if src:
-                                        st.markdown(f"<div class='source-card'>📄 {os.path.basename(src)}</div>", unsafe_allow_html=True)
+                            render_sources(sources)
                                         
                         messages.append({
                             "role": "assistant",

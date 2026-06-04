@@ -71,8 +71,17 @@ class RAGEngine:
             "chat_history": formatted_history
         })
         
+        # Trích xuất nguồn chi tiết từ các tài liệu ngữ cảnh
+        sources = []
+        for doc in response.get("context", []):
+            sources.append({
+                "source": doc.metadata.get("source"),
+                "page": doc.metadata.get("page", 0) + 1,  # Đổi sang 1-indexed để hiển thị cho người dùng
+                "content": doc.page_content
+            })
+        
         # Chuỗi mới trả kết quả ở key "answer" và tài liệu ở "context"
         return {
             "answer": response["answer"],
-            "sources": [doc.metadata.get("source") for doc in response["context"]]
+            "sources": sources
         }
