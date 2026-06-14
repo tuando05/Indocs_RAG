@@ -8,7 +8,7 @@ from src.config import PathConfig, RAGConfig, ModelConfig
 from src.rag.history import format_chat_history, get_history_aware_retriever
 
 class RAGEngine:
-    def __init__(self, llm_model: str = None, temperature: float = 0.0, vector_search_k: int = None, embeddings = None):
+    def __init__(self, llm_model: str = None, temperature: float = 0.0, vector_search_k: int = None, embeddings = None, use_reranker: bool = None, reranker_model_name: str = None, reranker_top_n: int = None):
         self.paths = PathConfig()
         self.rag_cfg = RAGConfig()
         self.model_cfg = ModelConfig()
@@ -52,8 +52,29 @@ class RAGEngine:
         k = vector_search_k if vector_search_k is not None else self.rag_cfg.VECTOR_SEARCH_K
         base_retriever = self.vector_db.as_retriever(search_kwargs={"k": k})
         
+        # Áp dụng Reranker nếu được kích hoạt
+        active_use_reranker = use_reranker if use_reranker is not None else self.model_cfg.USE_RERANKER
+        if active_use_reranker:
+            from langchain_classic.retrievers.contextual_compression import ContextualCompressionRetriever
+            from langchain_classic.retrievers.document_compressors.cross_encoder_rerank import CrossEncoderReranker
+            from langchain_community.cross_encoders import HuggingFaceCrossEncoder
+            
+            active_reranker_model = reranker_model_name or self.model_cfg.RERANKER_MODEL_NAME
+            active_top_n = reranker_top_n if reranker_top_n is not None else self.rag_cfg.RERANKER_TOP_N
+            
+            # Khởi tạo Cross-Encoder và bộ nén tài liệu
+            cross_encoder = HuggingFaceCrossEncoder(model_name=active_reranker_model)
+            compressor = CrossEncoderReranker(model=cross_encoder, top_n=active_top_n)
+            
+            retriever_for_chain = ContextualCompressionRetriever(
+                base_compressor=compressor,
+                base_retriever=base_retriever
+            )
+        else:
+            retriever_for_chain = base_retriever
+        
         # Tạo history aware retriever
-        self.history_aware_retriever = get_history_aware_retriever(self.llm, base_retriever)
+        self.history_aware_retriever = get_history_aware_retriever(self.llm, retriever_for_chain)
         
         # Bộ kết hợp tài liệu vào prompt và gửi cho LLM
         combine_docs_chain = create_stuff_documents_chain(self.llm, self.prompt)
