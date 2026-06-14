@@ -23,6 +23,9 @@ try:
     print(f"Chroma Dir: {paths.CHROMA_DIR}")
     print(f"LLM Model: {model_cfg.LLM_MODEL}")
     print(f"Embedding Model: {model_cfg.EMBEDDING_MODEL_NAME}")
+    print(f"Use Reranker: {model_cfg.USE_RERANKER}")
+    print(f"Reranker Model: {model_cfg.RERANKER_MODEL_NAME}")
+    print(f"Reranker Top N: {rag_cfg.RERANKER_TOP_N}")
     
     print("\n--- Kiểm tra Thư mục ---")
     if os.path.exists(paths.DATA_DIR):

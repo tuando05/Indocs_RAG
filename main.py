@@ -26,7 +26,7 @@ if "active_session_id" not in st.session_state:
     st.session_state.active_session_id = st.session_state.sessions_data.get("active_session_id", "default")
 
 # 4. Hiển thị Sidebar & Lấy tham số cấu hình từ người dùng
-selected_llm, temperature, chunk_size, chunk_overlap, vector_k = render_sidebar(model_cfg, rag_cfg, paths)
+selected_llm, temperature, chunk_size, chunk_overlap, vector_k, use_reranker, reranker_model, reranker_top_n = render_sidebar(model_cfg, rag_cfg, paths)
 
 # 5. Khởi tạo động cơ RAG (Sử dụng cache cho Embeddings để tăng tốc khởi tạo)
 @st.cache_resource
@@ -36,13 +36,21 @@ def get_cached_embeddings(model_name):
 embeddings = get_cached_embeddings(model_cfg.EMBEDDING_MODEL_NAME)
 
 @st.cache_resource(hash_funcs={HuggingFaceEmbeddings: id})
-def get_rag_engine(llm_model, temp, k, _emb):
+def get_rag_engine(llm_model, temp, k, use_reranker, reranker_model, reranker_top_n, _emb):
     try:
-        return RAGEngine(llm_model=llm_model, temperature=temp, vector_search_k=k, embeddings=_emb)
+        return RAGEngine(
+            llm_model=llm_model,
+            temperature=temp,
+            vector_search_k=k,
+            use_reranker=use_reranker,
+            reranker_model_name=reranker_model,
+            reranker_top_n=reranker_top_n,
+            embeddings=_emb
+        )
     except Exception as e:
         return e
 
-rag = get_rag_engine(selected_llm, temperature, vector_k, embeddings)
+rag = get_rag_engine(selected_llm, temperature, vector_k, use_reranker, reranker_model, reranker_top_n, embeddings)
 if isinstance(rag, Exception):
     st.sidebar.error(f"Lỗi khởi tạo động cơ RAG: {rag}")
     rag = None
