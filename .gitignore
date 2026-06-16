@@ -6,11 +6,12 @@
 **/__pycache__
 
 # Local data & database
-/chroma/
+/chroma/*
 /data/*
 !/data/.gitkeep
 /chat_sessions.json
 
 # IDE settings
 .idea/
-.vscode/
+.vscode/
+

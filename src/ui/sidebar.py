@@ -82,7 +82,19 @@ def render_sidebar(model_cfg, rag_cfg, paths):
     st.sidebar.markdown("#### Tham số RAG")
     chunk_size = st.sidebar.slider("Kích thước đoạn (Chunk Size):", min_value=100, max_value=2000, value=int(rag_cfg.CHUNK_SIZE), step=100)
     chunk_overlap = st.sidebar.slider("Độ chồng chập (Chunk Overlap):", min_value=0, max_value=500, value=int(rag_cfg.CHUNK_OVERLAP), step=50)
-    vector_k = st.sidebar.slider("Số lượng đoạn tìm kiếm (K):", min_value=1, max_value=10, value=int(rag_cfg.VECTOR_SEARCH_K), step=1)
+    vector_k = st.sidebar.slider("Số lượng đoạn tìm kiếm ban đầu (K):", min_value=1, max_value=20, value=int(rag_cfg.VECTOR_SEARCH_K), step=1)
+
+    # Cấu hình Reranker
+    st.sidebar.markdown("#### Bộ Tái Xếp Hạng (Reranker)")
+    use_reranker = st.sidebar.checkbox("Kích hoạt Reranker", value=bool(model_cfg.USE_RERANKER))
+    
+    if use_reranker:
+        reranker_model = st.sidebar.text_input("Mô hình Reranker:", value=model_cfg.RERANKER_MODEL_NAME)
+        default_top_n = min(int(rag_cfg.RERANKER_TOP_N), vector_k)
+        reranker_top_n = st.sidebar.slider("Số lượng đoạn sau khi Rerank (Top N):", min_value=1, max_value=vector_k, value=default_top_n, step=1)
+    else:
+        reranker_model = model_cfg.RERANKER_MODEL_NAME
+        reranker_top_n = int(rag_cfg.RERANKER_TOP_N)
 
     # Nút dọn dẹp cơ sở dữ liệu
     if st.sidebar.button("♻️ Reset Cơ sở dữ liệu", use_container_width=True, type="secondary"):
@@ -102,4 +114,4 @@ def render_sidebar(model_cfg, rag_cfg, paths):
             st.sidebar.success("Đã reset hệ thống thành công!")
             st.rerun()
             
-    return selected_llm, temperature, chunk_size, chunk_overlap, vector_k
+    return selected_llm, temperature, chunk_size, chunk_overlap, vector_k, use_reranker, reranker_model, reranker_top_n
