@@ -1,9 +1,9 @@
 from pydantic_settings import BaseSettings
 
 class RAGConfig(BaseSettings):
-    CHUNK_SIZE: int
-    CHUNK_OVERLAP: int
-    VECTOR_SEARCH_K: int
+    CHUNK_SIZE: int = 1000
+    CHUNK_OVERLAP: int = 200
+    VECTOR_SEARCH_K: int = 10
     RERANKER_TOP_N: int = 3
 
     class Config:
