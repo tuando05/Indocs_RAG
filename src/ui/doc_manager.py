@@ -6,8 +6,8 @@ from src.ingestion.ingestor import DataIngestor
 def render_doc_manager(paths, model_cfg, chunk_size, chunk_overlap):
     st.subheader("📁 Tải tài liệu lên")
     uploaded_files = st.file_uploader(
-        "Kéo thả hoặc tải lên tài liệu PDF mới",
-        type=["pdf"],
+        "Kéo thả hoặc tải lên tài liệu mới (PDF, DOCX, TXT, MD)",
+        type=["pdf", "docx", "txt", "md"],
         accept_multiple_files=True
     )
     
@@ -57,8 +57,9 @@ def render_doc_manager(paths, model_cfg, chunk_size, chunk_overlap):
     st.markdown("---")
     st.subheader("📄 Danh sách tài liệu hiện có")
     
+    supported_extensions = (".pdf", ".docx", ".txt", ".md")
     if os.path.exists(paths.DATA_DIR):
-        docs = [f for f in os.listdir(paths.DATA_DIR) if f.endswith(".pdf")]
+        docs = [f for f in os.listdir(paths.DATA_DIR) if f.lower().endswith(supported_extensions)]
     else:
         docs = []
         
@@ -79,19 +80,14 @@ def render_doc_manager(paths, model_cfg, chunk_size, chunk_overlap):
                     os.remove(doc_path)
                     st.success(f"Đã xóa tài liệu: {doc}")
                     
-                    # Tự động nạp lại các tài liệu còn lại (nếu có)
-                    remaining_pdfs = [f for f in os.listdir(paths.DATA_DIR) if f.endswith(".pdf")]
-                    if os.path.exists(paths.CHROMA_DIR):
-                        shutil.rmtree(paths.CHROMA_DIR)
-                        
-                    if remaining_pdfs:
-                        st.info("Đang tự động cập nhật lại cơ sở dữ liệu...")
-                        ingestor = DataIngestor(
-                            data_dir=paths.DATA_DIR,
-                            chroma_dir=paths.CHROMA_DIR,
-                            embedding_model=model_cfg.EMBEDDING_MODEL_NAME
-                        )
-                        ingestor.run(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+                    # Tự động nạp lại (Ingestor sẽ tự động nhận diện file đã xóa để xóa vector)
+                    st.info("Đang tự động cập nhật lại cơ sở dữ liệu...")
+                    ingestor = DataIngestor(
+                        data_dir=paths.DATA_DIR,
+                        chroma_dir=paths.CHROMA_DIR,
+                        embedding_model=model_cfg.EMBEDDING_MODEL_NAME
+                    )
+                    ingestor.run(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
                     st.rerun()
                 except Exception as e:
                     st.error(f"Lỗi khi xóa tệp: {e}")
