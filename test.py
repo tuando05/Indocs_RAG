@@ -70,3 +70,9 @@ try:
 
 except Exception as e:
     print(f"\nLỖI khi kiểm tra hệ thống: {e}")
+    print("\n--- GỢI Ý KHẮC PHỤC ---")
+    print("1. Hãy chắc chắn rằng ứng dụng Ollama đang chạy trên máy của bạn (mặc định tại http://localhost:11434).")
+    print("2. Đảm bảo bạn đã tải mô hình LLM tương ứng về máy bằng cách chạy lệnh:")
+    llm_name = model_cfg.LLM_MODEL if 'model_cfg' in locals() else 'llama3.1:8b'
+    print(f"   ollama pull {llm_name}")
+    print("3. Nếu sử dụng Reranker, kiểm tra xem máy tính có kết nối mạng ổn định để tải mô hình Reranker từ Hugging Face trong lần chạy đầu tiên hay không.")

@@ -114,4 +114,8 @@ def render_sidebar(model_cfg, rag_cfg, paths):
             st.sidebar.success("Đã reset hệ thống thành công!")
             st.rerun()
             
+    # Hiển thị thông tin phiên bản ở chân thanh bên sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.caption("🤖 Indocs RAG Chatbot v1.0.0")
+            
     return selected_llm, temperature, chunk_size, chunk_overlap, vector_k, use_reranker, reranker_model, reranker_top_n

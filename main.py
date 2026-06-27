@@ -150,7 +150,16 @@ with tab_chat:
                         # Lấy lịch sử hội thoại trước đó (loại trừ câu hỏi hiện tại vừa thêm vào cuối danh sách)
                         result = rag.query(prompt, chat_history=messages[:-1])
                         answer = result["answer"]
-                        sources = list(set(result["sources"])) if result.get("sources") else []
+                        
+                        # Loại bỏ trùng lặp nguồn trích dẫn một cách an toàn và giữ nguyên thứ tự
+                        raw_sources = result.get("sources", [])
+                        seen = set()
+                        sources = []
+                        for src in raw_sources:
+                            key = (src.get("source"), src.get("page"), src.get("content"))
+                            if key not in seen:
+                                seen.add(key)
+                                sources.append(src)
                         
                         st.markdown(answer)
                         if sources:

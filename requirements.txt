@@ -10,3 +10,4 @@ pypdf
 python-docx
 sentence-transformers
 python-dotenv
+docx2txt

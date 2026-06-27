@@ -1,4 +1,4 @@
-# Indocs RAG Chatbot 🤖
+# Indocs RAG Chatbot 🤖 `v1.0.0`
 
 Hệ thống hỏi đáp tài liệu thông minh (RAG) sử dụng các mô hình ngôn ngữ lớn (LLM) chạy local qua Ollama và cơ sở dữ liệu vector ChromaDB. Dự án được phát triển dựa trên framework LangChain phiên bản mới nhất (v1.x).
 
@@ -88,3 +88,16 @@ venv\Scripts\streamlit run main.py
 ```
 - Trình duyệt sẽ tự động mở trang giao diện chatbot tại địa chỉ: `http://localhost:8501`.
 - Tại đây, bạn có thể nhập câu hỏi liên quan đến nội dung tài liệu. Chatbot sẽ tự động tìm kiếm các đoạn văn bản liên quan nhất và trả lời bạn kèm theo các nguồn tài liệu tham khảo cụ thể.
+
+---
+
+## 📝 Nhật ký thay đổi (Changelog)
+
+### [v1.0.0] - 2026-06-25
+* **Sửa lỗi (Bug Fixes):**
+  - Khắc phục triệt để lỗi sập giao diện `TypeError: unhashable type: 'dict'` khi hiển thị danh sách nguồn trích dẫn.
+* **Cải tiến & Tối ưu (Improvements & Restructuring):**
+  - Cập nhật cơ chế nạp cấu hình `ModelConfig` và `RAGConfig` kế thừa từ Pydantic `BaseSettings` có giá trị mặc định để tránh crash hệ thống khi thiếu file `.env`.
+  - Tối ưu hóa pipeline nạp dữ liệu `DataIngestor` để chỉ quét các tập tin thực tế và tự động chuẩn bị thư mục chứa manifest.
+  - Bổ sung chỉ số phiên bản hệ thống `v1.0.0` rõ ràng trực tiếp trên thanh bên (sidebar) giao diện Streamlit.
+  - Cải thiện kịch bản kiểm tra `test.py` để cung cấp các gợi ý gỡ lỗi hữu ích khi không kết nối được Ollama.
